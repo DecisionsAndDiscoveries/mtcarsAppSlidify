@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>The mtcars app</title>
+  <meta charset="utf-8">
+  <meta name="description" content="The mtcars app">
+  <meta name="author" content="Decisions and Discoveries">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/solarized_light.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+<link rel=stylesheet href="./assets/css/slidify.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>The mtcars app</h1>
+    <h2>Course project for Developing Data Products</h2>
+    <p>Decisions and Discoveries<br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>Introduction</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><p>This project is the extension of my project in the Regression Models course of the Data Science Specialization.</p></li>
+<li><p>Background on the Regression Models project</p>
+
+<ul>
+<li>The <code>mtcars</code> dataset in R was examined to determine if any relationship exists between miles per gallon (MPG) and other variables in the data.</li>
+<li>Of particular interest is the comparison of MPG for cars with automatic and manual transmission.</li>
+<li>A multi-variate linear regression model was found to explain MPG by a car&#39;s weight and horsepower for cars with automatic and manual transmission.</li>
+</ul></li>
+<li><p>This current project uses the linear model and lets the user predict the MPG of a car by providing its weight, horsepower and transmission type.</p></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h2>Data and regression model</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><p>The <code>mtcars</code> dataset was extracted from the 1974 Motor Trend US magazine. A description of the dataset can be found at <a href="https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/mtcars.html">here</a>.</p></li>
+<li><p>Regression model (dataset has been assigned to the variable <code>cars</code>)</p></li>
+</ul>
+
+<pre><code>## lm(formula = mpg ~ am + wt + hp + am * wt, data = cars)
+</code></pre>
+
+<pre><code>##                Estimate  Std. Error   t value     Pr(&gt;|t|)
+## (Intercept) 30.94733319 2.723410935 11.363446 8.546944e-12
+## ammanual    11.55481296 4.023276579  2.871991 7.844579e-03
+## wt          -2.51558550 0.844496532 -2.978799 6.051842e-03
+## hp          -0.02694935 0.009795903 -2.751084 1.047673e-02
+## ammanual:wt -3.57790980 1.442795585 -2.479845 1.967639e-02
+</code></pre>
+
+<ul>
+<li>R-squared value: 0.8696</li>
+<li>The p-values of the intercept and coefficients all have values of less than 0.05.</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>Reusing the model in the app</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>For performance reason, we do not want the model to be recomputed each time the app runs. This is especially so when datasets are large and complex.</li>
+<li>The model is saved as a RDS file into a resource folder called <code>model</code> in the app&#39;s directory. Upon loading the app at runtime, Shiny server loads the model into memory.</li>
+</ul>
+
+<pre><code class="r"># Development time: save model to resource folder
+saveRDS(fit, file = &quot;model/modelMPG.RDS&quot;)
+# Runtime: load model
+model &lt;- readRDS(&quot;model/modelMPG.RDS&quot;)
+</code></pre>
+
+<ul>
+<li>The coefficients of the linear regression equations for automatic and manual cars are then computed and the equations are constructed using the coefficients from the model.</li>
+<li>The MPG prediction is found from the <code>predict</code> function using the user&#39;s inputs.</li>
+</ul>
+
+<pre><code class="r">round(predict(model, data()), 2)
+# data() contains the user&#39;s inputs captured in a reactive function
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>Conclusion and suggestions for improvements</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>Using the app, the user is able to predict the MPG of an automatic or manual car by entering its weight and horsepower.</li>
+<li>As can be seen from the plot in the app, the data points in <code>mtcars</code> are lacking in automatic cars that are lighter in weight and manual cars that are heavier in weight.</li>
+<li>The regression model may not give good predictions for automatic and manual cars that fall out of the weight ranges in the data set.</li>
+<li>An improved version of the app may do one of the following:
+
+<ul>
+<li>Provide a confidence interval for the prediction. The confidence interval is expected to increase as the selected weight moves further away from the mean weight of the selected transmission type in either direction.</li>
+<li>Limit the range that the user may enter for the weight of the car to the weight range of available data points for cars of the selected transmission type.</li>
+</ul></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Introduction'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Data and regression model'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Reusing the model in the app'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Conclusion and suggestions for improvements'>
+         4
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>

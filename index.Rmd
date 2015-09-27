@@ -1,0 +1,90 @@
+---
+title       : The mtcars app
+subtitle    : Course project for Developing Data Products
+author      : Decisions and Discoveries
+job         : 
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : solarized_light      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+## Introduction
+
+- This project is the extension of my project in the Regression Models course of the Data Science Specialization.
+
+- Background on the Regression Models project
+    - The `mtcars` dataset in R was examined to determine if any relationship exists between miles per gallon (MPG) and other variables in the data.
+    - Of particular interest is the comparison of MPG for cars with automatic and manual transmission.
+    - A multi-variate linear regression model was found to explain MPG by a car's weight and horsepower for cars with automatic and manual transmission.
+
+- This current project uses the linear model and lets the user predict the MPG of a car by providing its weight, horsepower and transmission type.
+
+
+---
+
+## Data and regression model
+
+```{r echo=FALSE, results='hide'}
+data(mtcars)
+cars <- mtcars
+cars$cyl <- factor(cars$cyl)
+cars$vs <- factor(cars$vs)
+cars$am <- factor(cars$am, levels = c(0, 1), labels = c("automatic", "manual"))
+cars$gear <- factor(cars$gear)
+cars$carb <- factor(cars$carb)
+fit <- lm(mpg ~ am + wt + hp + am * wt, data = cars)
+sum.fit <- summary(fit)
+```
+
+- The `mtcars` dataset was extracted from the 1974 Motor Trend US magazine. A description of the dataset can be found at [here](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/mtcars.html).
+
+- Regression model (dataset has been assigned to the variable `cars`)
+
+```{r echo=FALSE}
+sum.fit$call
+sum.fit$coefficients
+```
+
+- R-squared value: `r round(sum.fit$r.squared, 4)`
+- The p-values of the intercept and coefficients all have values of less than 0.05.
+
+
+---
+
+## Reusing the model in the app
+
+- For performance reason, we do not want the model to be recomputed each time the app runs. This is especially so when datasets are large and complex.
+- The model is saved as a RDS file into a resource folder called `model` in the app's directory. Upon loading the app at runtime, Shiny server loads the model into memory.
+
+```{r eval=FALSE}
+# Development time: save model to resource folder
+saveRDS(fit, file = "model/modelMPG.RDS")
+# Runtime: load model
+model <- readRDS("model/modelMPG.RDS")
+```
+
+- The coefficients of the linear regression equations for automatic and manual cars are then computed and the equations are constructed using the coefficients from the model.
+- The MPG prediction is found from the `predict` function using the user's inputs.
+
+``` {r eval=FALSE}
+round(predict(model, data()), 2)
+# data() contains the user's inputs captured in a reactive function
+```
+
+
+---
+
+## Conclusion and suggestions for improvements
+
+- Using the app, the user is able to predict the MPG of an automatic or manual car by entering its weight and horsepower.
+- As can be seen from the plot in the app, the data points in `mtcars` are lacking in automatic cars that are lighter in weight and manual cars that are heavier in weight.
+- The regression model may not give good predictions for automatic and manual cars that fall out of the weight ranges in the data set.
+- An improved version of the app may do one of the following:
+    - Provide a confidence interval for the prediction. The confidence interval is expected to increase as the selected weight moves further away from the mean weight of the selected transmission type in either direction.
+    - Limit the range that the user may enter for the weight of the car to the weight range of available data points for cars of the selected transmission type.
+
+
+
